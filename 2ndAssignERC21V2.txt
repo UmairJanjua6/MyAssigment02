@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+
+contract TestERC721 is ERC721, Ownable {
+    using Counters for Counters.Counter;
+
+    uint private constant TOKENCOST = 7000000000000000;
+    uint private immutable saleStart;
+    uint private immutable saleEnd;
+    Counters.Counter private _totalTokens;
+    
+    constructor(string memory _name, string memory _symbol, uint _saleStart, uint _saleEnd) ERC721(_name, _symbol) {
+        
+        require(_saleStart > 0, "sale start could not be Zero");
+        require(_saleEnd > 0, "sale End could not be Zero");
+        saleStart = _saleStart;
+        saleEnd = _saleEnd;
+    }
+
+   
+    function buyToken(uint _tokenCount) external payable {
+
+        //require(block.timestamp >= saleStart && block.timestamp <= saleEnd, "No sale period");
+        uint tokensPrice = TOKENCOST * _tokenCount;
+        require (msg.value == tokensPrice, "you dont have amount to purchase bulk tokens");
+        for(uint i = 0; i < _tokenCount; i++) { 
+            uint mintTokenId = _totalTokens.current();
+            _totalTokens.increment();
+            _mint(msg.sender, mintTokenId);
+        } 
+
+    } 
+
+    function contractBal() external view returns(uint) {
+
+        return address(this).balance;
+
+    }
+
+    function balTransferToOwner() external payable onlyOwner() {
+
+        payable(owner()).transfer(address(this).balance);
+
+    }
+
+    function totalTokensMinted() external view returns(uint) {
+        return _totalTokens.current();
+    }
+
+    fallback() external payable {}
+    
+    receive() external payable{}
+}
