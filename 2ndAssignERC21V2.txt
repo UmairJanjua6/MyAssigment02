@@ -50,7 +50,5 @@ contract TestERC721 is ERC721, Ownable {
         return _totalTokens.current();
     }
 
-    fallback() external payable {}
     
-    receive() external payable{}
 }
